@@ -7,13 +7,12 @@ const runningTasks = new WeakMap<vscode.WebviewPanel, AbortController>();
 export function activate(context: vscode.ExtensionContext) {
     console.log('Congratulations, your extension "auditreporthelper" is now active!');
 
-    // Hello World 命令 (保持不变)
     const disposable = vscode.commands.registerCommand('auditreporthelper.helloWorld', () => {
         vscode.window.showInformationMessage('Hello World from AuditReportHelper!');
     });
 
     // =========================================================================
-    // Finding 信息生成 (Webview 1)
+    // Finding 信息生成
     // =========================================================================
     const reportHelper = vscode.commands.registerCommand('auditreporthelper.reportWrite', () => {
         const editor = vscode.window.activeTextEditor;
@@ -42,23 +41,18 @@ export function activate(context: vscode.ExtensionContext) {
 
         panel.webview.html = getWebviewContent(text, filePath, lineStart, lineEnd, savedTemplates);
 
-        // 监听前端消息
         panel.webview.onDidReceiveMessage(async message => {
             switch (message.command) {
                 case 'callLLM':
-                    // 1. 创建控制器并存入 Map
                     const controller = new AbortController();
                     runningTasks.set(panel, controller);
-                    // 2. 调用流式函数
                     await handleCallLLMStream(panel, message.prompt, message.code, controller.signal);
                     break;
                 case 'stopGeneration':
-                    // 接收到停止指令
                     const task = runningTasks.get(panel);
                     if (task) {
-                        task.abort(); // 终止 fetch 请求
-                        runningTasks.delete(panel); // 移除记录
-                        // 通知前端已停止 (可选，前端按钮点击时其实已经知道了，但为了状态一致性)
+                        task.abort();
+                        runningTasks.delete(panel);
                         panel.webview.postMessage({ command: 'streamEnd' });
                     }
                     break;
@@ -67,7 +61,7 @@ export function activate(context: vscode.ExtensionContext) {
     });
 
     // =========================================================================
-    // Process 生成 (Webview 2)
+    // Process 生成
     // =========================================================================
     const processHelper = vscode.commands.registerCommand('auditreporthelper.generateParticipantProcess', () => {
         const editor = vscode.window.activeTextEditor;
@@ -88,7 +82,6 @@ export function activate(context: vscode.ExtensionContext) {
 
         newProcessPanel.webview.html = getProcessWebviewContent(fullCode, fileName, PROMPT_PARTICIPANT_PROCESS);
 
-        // 监听前端消息
         newProcessPanel.webview.onDidReceiveMessage(async message => {
             switch (message.command) {
                 case 'callLLM':
@@ -125,7 +118,6 @@ async function handleCallLLMStream(
     const config = vscode.workspace.getConfiguration('codeAskAI');
     const apiKey = config.get<string>('apiKey');
     
-    // 灵活处理 URL
     let baseUrl = config.get<string>('baseUrl') || "https://api.deepseek.com";
     if (baseUrl.endsWith('/')) baseUrl = baseUrl.slice(0, -1);
     let fetchUrl = `${baseUrl}/chat/completions`;
@@ -142,13 +134,11 @@ async function handleCallLLMStream(
         return;
     }
 
-    // 1. 通知前端：开始思考 (清空旧内容)
     panel.webview.postMessage({ command: 'thinking' });
 
     try {
         const fullContent = `${prompt}\n\n代码片段:\n\`\`\`\n${code}\n\`\`\``;
 
-        // 2. 发起 Fetch 请求 (开启流式 stream: true)
         const response = await fetch(fetchUrl, {
             method: 'POST',
             headers: {
@@ -158,9 +148,9 @@ async function handleCallLLMStream(
             body: JSON.stringify({
                 model: model,
                 messages: [{ role: "user", content: fullContent }],
-                stream: true // <--- 关键点：开启流式
+                stream: true
             }),
-            signal: signal // <--- 绑定 AbortSignal，用于停止请求
+            signal: signal
         });
 
         if (!response.ok) {
@@ -170,10 +160,9 @@ async function handleCallLLMStream(
 
         if (!response.body) throw new Error("No response body");
 
-        // 3. 处理流数据
         const reader = response.body.getReader();
         const decoder = new TextDecoder("utf-8");
-        let buffer = ""; // 缓存未处理完的片段
+        let buffer = "";
 
         while (true) {
             const { done, value } = await reader.read();
@@ -182,24 +171,21 @@ async function handleCallLLMStream(
             const chunk = decoder.decode(value, { stream: true });
             buffer += chunk;
 
-            // SSE 数据通常按行分割
             const lines = buffer.split("\n");
-            // 最后一行可能不完整，留到下一次循环处理
             buffer = lines.pop() || ""; 
 
             for (const line of lines) {
                 const trimmed = line.trim();
                 if (!trimmed.startsWith("data: ")) continue;
                 
-                const dataStr = trimmed.slice(6); // 去掉 "data: "
-                if (dataStr === "[DONE]") continue; // 结束标志
+                const dataStr = trimmed.slice(6);
+                if (dataStr === "[DONE]") continue;
 
                 try {
                     const json = JSON.parse(dataStr);
                     const deltaContent = json.choices?.[0]?.delta?.content;
                     
                     if (deltaContent) {
-                        // 发送增量内容给前端
                         panel.webview.postMessage({ command: 'streamUpdate', text: deltaContent });
                     }
                 } catch (e) {
@@ -207,30 +193,34 @@ async function handleCallLLMStream(
                 }
             }
         }
-
-        // 4. 通知前端：流传输结束
         panel.webview.postMessage({ command: 'streamEnd' });
 
     } catch (error: any) {
         if (error.name === 'AbortError') {
-            // 用户主动停止，不算报错
             panel.webview.postMessage({ command: 'streamEnd' }); 
         } else {
             panel.webview.postMessage({ command: 'error', text: `请求失败: ${error.message}` });
         }
     } finally {
-        // 任务结束，清理 Map
         runningTasks.delete(panel);
     }
 }
 
+// =========================================================================
+// 【重要修复】安全序列化函数
+// 专门把 < 符号转义，防止 </script> 截断脚本
+// =========================================================================
+function safeJsonStringify(obj: any) {
+    return JSON.stringify(obj).replace(/</g, '\\u003c').replace(/>/g, '\\u003e');
+}
 
 // =========================================================================
-// HTML 模板 1: Finding Generator (增加 Stop 按钮和流式 JS 逻辑)
+// HTML 模板 1: Finding Generator
 // =========================================================================
 function getWebviewContent(code: string, path: string, start: number, end: number, templates: any[]) {
-    const templatesJson = JSON.stringify(templates);
-    const codeJson = JSON.stringify(code);
+    // 使用 safeJsonStringify 替代 JSON.stringify
+    const templatesJson = safeJsonStringify(templates);
+    const codeJson = safeJsonStringify(code);
 
     return `<!DOCTYPE html>
 <html lang="en">
@@ -245,17 +235,12 @@ function getWebviewContent(code: string, path: string, start: number, end: numbe
         #response-text { min-height: 200px; resize: vertical; line-height: 1.5; }
         .control-group { margin-bottom: 15px; border: 1px solid var(--vscode-input-border); padding: 10px; border-radius: 4px; }
         label { display: block; margin-bottom: 5px; font-weight: bold; }
-        
-        /* 按钮组样式 */
         .btn-group { display: flex; gap: 10px; }
         button { background: var(--vscode-button-background); color: var(--vscode-button-foreground); border: none; padding: 8px 12px; cursor: pointer; flex: 1; }
         button:hover { background: var(--vscode-button-hoverBackground); }
         button:disabled { opacity: 0.6; cursor: not-allowed; }
-        
-        /* 红色停止按钮 */
         #stop-btn { background: #d32f2f; display: none; } 
         #stop-btn:hover { background: #b71c1c; }
-
         #status-msg { margin-top: 10px; margin-bottom: 5px; min-height: 20px;}
         .loading { color: var(--vscode-textLink-activeForeground); font-style: italic; }
         .error { color: #f48771; }
@@ -288,7 +273,6 @@ function getWebviewContent(code: string, path: string, start: number, end: numbe
         
         document.getElementById('code-snippet').value = ${codeJson};
 
-        // 渲染模板下拉框
         const select = document.getElementById('template-select');
         templates.forEach((t, i) => {
             const opt = document.createElement('option');
@@ -300,45 +284,38 @@ function getWebviewContent(code: string, path: string, start: number, end: numbe
         const statusDiv = document.getElementById('status-msg');
         const responseText = document.getElementById('response-text');
 
-        // 开始生成
         askBtn.addEventListener('click', () => {
             const tpl = templates[select.value].content;
             const userIn = document.getElementById('user-input').value;
             const code = document.getElementById('code-snippet').value;
-            
             vscode.postMessage({ command: 'callLLM', prompt: tpl + " " + userIn, code: code });
         });
 
-        // 停止生成
         stopBtn.addEventListener('click', () => {
             vscode.postMessage({ command: 'stopGeneration' });
             statusDiv.innerHTML = '<span style="color:orange">Stopping...</span>';
-            stopBtn.disabled = true; // 防止连点
+            stopBtn.disabled = true;
         });
 
         window.addEventListener('message', event => {
             const msg = event.data;
             switch (msg.command) {
                 case 'thinking':
-                    responseText.value = ''; // 清空
+                    responseText.value = ''; 
                     statusDiv.innerHTML = '<span class="loading">Thinking & Streaming...</span>';
-                    askBtn.style.display = 'none';  // 隐藏生成按钮
-                    stopBtn.style.display = 'block'; // 显示停止按钮
+                    askBtn.style.display = 'none';
+                    stopBtn.style.display = 'block';
                     stopBtn.disabled = false;
                     break;
-
                 case 'streamUpdate':
-                    responseText.value += msg.text; // 追加文本
-                    // 自动滚动到底部
+                    responseText.value += msg.text;
                     responseText.scrollTop = responseText.scrollHeight;
                     break;
-
                 case 'streamEnd':
                     statusDiv.innerHTML = '✅ Done.';
                     askBtn.style.display = 'block';
                     stopBtn.style.display = 'none';
                     break;
-
                 case 'error':
                     statusDiv.innerHTML = '<span class="error">Error: ' + msg.text + '</span>';
                     askBtn.style.display = 'block';
@@ -352,13 +329,15 @@ function getWebviewContent(code: string, path: string, start: number, end: numbe
 }
 
 // =========================================================================
-// HTML 模板 2: Process Generator (同样增加 Stop 按钮和流式逻辑)
+// HTML 模板 2: Process Generator
 // =========================================================================
 function getProcessWebviewContent(code: string, fileName: string, prompt: string) {
-    const codeJson = JSON.stringify(code);
-    const promptJson = JSON.stringify(prompt);
+    // 使用 safeJsonStringify 替代 JSON.stringify
+    const codeJson = safeJsonStringify(code);
+    const promptJson = safeJsonStringify(prompt);
 
-    return `<!DOCTYPE html>
+    return `
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -368,14 +347,11 @@ function getProcessWebviewContent(code: string, fileName: string, prompt: string
         details { margin-bottom: 15px; border: 1px solid var(--vscode-panel-border); }
         summary { padding: 8px; cursor: pointer; background: var(--vscode-sideBar-background); }
         #source-code-viewer { width: 100%; height: 200px; font-family: 'Courier New', monospace; white-space: pre; background: var(--vscode-input-background); color: var(--vscode-input-foreground); border: none; padding: 10px; resize: vertical; }
-        
         .btn-group { display: flex; gap: 10px; margin-bottom: 15px; }
         button { background: var(--vscode-button-background); color: var(--vscode-button-foreground); border: none; padding: 12px; cursor: pointer; flex: 1; border-radius: 4px; font-size: 1.1em;}
         button:hover { background: var(--vscode-button-hoverBackground); }
-        
         #stop-btn { background: #d32f2f; display: none; }
         #stop-btn:hover { background: #b71c1c; }
-
         .result-container { flex-grow: 1; display: flex; flex-direction: column; }
         #result-editor { flex-grow: 1; background: var(--vscode-input-background); color: var(--vscode-input-foreground); border: 1px solid var(--vscode-input-border); padding: 15px; font-family: var(--vscode-editor-font-family); line-height: 1.6; resize: none; }
         #status-box { margin-bottom: 10px; min-height: 20px; font-weight: bold; }
@@ -400,6 +376,7 @@ function getProcessWebviewContent(code: string, fileName: string, prompt: string
 
     <script>
         const vscode = acquireVsCodeApi();
+        // 使用转义后的 JSON，避免 HTML 结构破坏
         document.getElementById('source-code-viewer').value = ${codeJson};
         const prompt = ${promptJson};
 
@@ -409,7 +386,10 @@ function getProcessWebviewContent(code: string, fileName: string, prompt: string
         const editor = document.getElementById('result-editor');
 
         genBtn.addEventListener('click', () => {
-            vscode.postMessage({ command: 'callLLM', prompt: prompt, code: ${codeJson} });
+            // 这里我们传回后端的还是原始的 codeJson (包含 Unicode 转义的)，
+            // 但后端其实只关心它的内容。为了保险，我们在前端取 value 发送更稳妥
+            const currentCode = document.getElementById('source-code-viewer').value;
+            vscode.postMessage({ command: 'callLLM', prompt: prompt, code: currentCode });
         });
 
         stopBtn.addEventListener('click', () => {
