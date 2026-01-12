@@ -1,7 +1,7 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
-import { PROMPT_FINDING_GENERATE,PROMPT_PARTICIPANT_PROCESS } from './prompt';
+import { PROMPT_FINDING_GENERATE,PROMPT_PARTICIPANT_PROCESS,PROMPT_FINDING_STRICT_GENERATE } from './prompt';
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
@@ -47,7 +47,8 @@ export function activate(context: vscode.ExtensionContext) {
         );
 
 		const savedTemplates = context.globalState.get('promptTemplates', [
-            { name: "生成 Finding 描述", content: PROMPT_FINDING_GENERATE },
+            { name: "生成 Finding 描述", content: PROMPT_FINDING_STRICT_GENERATE },
+            { name: "生成 Finding 描述-懒人模式", content: PROMPT_FINDING_GENERATE },
             // { name: "寻找Bug", content: "请帮我找出这段代码中的潜在Bug：" },
             // { name: "代码优化", content: "请帮我优化这段代码，使其更高效：" }
         ]);
@@ -122,6 +123,18 @@ async function handleCallLLM(panel: vscode.WebviewPanel, prompt: string, code: s
 
     if (!apiKey) {
         panel.webview.postMessage({ command: 'error', text: '请在 VS Code 设置中配置 DeepSeek API Key (codeAskAI.apiKey)。' });
+        const action = await vscode.window.showErrorMessage(
+            '未检测到 API Key！请先配置 DeepSeek API Key。', 
+            '点击这里配置DeepSeek API Key' // <--- 这是一个按钮
+        );
+
+        if (action === '点击这里配置DeepSeek API Key') {
+            // 执行命令：打开设置页，并自动搜索 'codeAskAI.apiKey'
+            await vscode.commands.executeCommand(
+                'workbench.action.openSettings', 
+                'codeAskAI.apiKey' 
+            );
+        }
         return;
     }
 
@@ -269,7 +282,9 @@ function getWebviewContent(code: string, path: string, start: number, end: numbe
 
     <div id="status-msg"></div>
 
-    <label>AI Response (Editable):</label>
+    <label>AI Response:</label><b style="color: #e53935;">注意：AI 有幻觉会说胡话，务必检查输出！！！</b>
+
+    
     <textarea id="response-text" placeholder="AI response will be generated here..."></textarea>
 
     <script>

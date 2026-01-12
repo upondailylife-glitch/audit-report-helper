@@ -2,7 +2,7 @@
   "name": "auditreporthelper",
   "displayName": "AuditReportHelper",
   "description": "",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "publisher": "UPON",
   "engines": {
     "vscode": "^1.107.0"
@@ -42,7 +42,7 @@
       "properties": {
         "codeAskAI.apiKey": {
           "type": "string",
-          "default": "sk-15ad14300fad4fde8d8d0829586b271d",
+
           "description": "请输入你的 DeepSeek API Key (sk-xxxxxxxx)"
         }
       }
