@@ -1,3 +1,7 @@
+// ============================================================================
+// Prompt 模板常量
+// ============================================================================
+
 export const PROMPT_FINDING_GENERATE = `
 你是一个 finding 描述撰写机器人，你需要用英语辅助我生成一份报告。
 
@@ -13,7 +17,7 @@ export const PROMPT_FINDING_GENERATE = `
 如果你遇到的情况不符合上面几种，可以酌情考虑取一个合适的标题
 
 问题描述
-遵照三步走原则，即“What, Why, How”。每一个finding都需要先描述代码的背景，即这段代码是做什么的；然后描述这段代码为什么出现问题；最后描述这个问题会导致什么结果/危害。
+遵照三步走原则，即"What, Why, How"。每一个finding都需要先描述代码的背景，即这段代码是做什么的；然后描述这段代码为什么出现问题；最后描述这个问题会导致什么结果/危害。
 
 可以参考的描述八股文：
 描述出问题的代码所在合约/函数是做什么的
@@ -24,7 +28,7 @@ export const PROMPT_FINDING_GENERATE = `
 上面描述范式仅供参考，不同的描述语境采用的描述方法不唯一，原则是遵循三步走，使得描述清晰。如果当前 Finding 不需要这么复杂的描述，就不需要硬套八股。
 如果描述中需要涉及代码引用，需要在引用代码前标注代码位置。示例：
 ** audit/code/dir/contract.move **
-\`\`\` \rs =1
+\`\`\` \\rs =1
 fun hello(){
 println!("hello");
 }
@@ -72,7 +76,7 @@ export const PROMPT_FINDING_STRICT_GENERATE = `
 如果你遇到的情况不符合上面几种，可以酌情考虑取一个合适的标题
 
 问题描述
-遵照三步走原则，即“What, Why, How”。每一个finding都需要先描述代码的背景，即这段代码是做什么的；然后描述这段代码为什么出现问题；最后描述这个问题会导致什么结果/危害。
+遵照三步走原则，即"What, Why, How"。每一个finding都需要先描述代码的背景，即这段代码是做什么的；然后描述这段代码为什么出现问题；最后描述这个问题会导致什么结果/危害。
 
 可以参考的描述八股文：
 描述出问题的代码所在合约/函数是做什么的
@@ -83,7 +87,7 @@ export const PROMPT_FINDING_STRICT_GENERATE = `
 上面描述范式仅供参考，不同的描述语境采用的描述方法不唯一，原则是遵循三步走，使得描述清晰。如果当前 Finding 不需要这么复杂的描述，就不需要硬套八股。
 如果描述中需要涉及代码引用，需要在引用代码前标注代码位置。示例：
 ** audit/code/dir/contract.move **
-\`\`\` \rs =1
+\`\`\` \\rs =1
 fun hello(){
 println!("hello");
 }
@@ -116,8 +120,6 @@ println!("hello");
 接下来是我提供的一些描述信息和相关代码片段。 如果我的描述信息缺少前面说的描写 finding 的所需内容，你应该直接返回描述提示缺少 {缺少的关键信息} ，无法完成finding信息,注意我提供的代码不能作为信息让你猜测。
 `;
 
-
-
 export const PROMPT_PARTICIPANT_PROCESS = `
 找出合约中各个角色（如Admin、User、以及其他特权等角色），以及该角色能操作的函数（排除查询函数、package函数）输出如下内容：
 **Admin**
@@ -129,3 +131,13 @@ export const PROMPT_PARTICIPANT_PROCESS = `
 不要将用户可以操作的函数写到Admin角色内
 #[test]标签的函数是测试函数不要输出
 `;
+
+// 默认模板列表
+export const DEFAULT_FINDING_TEMPLATES = [
+    { name: "生成 Finding 描述", content: PROMPT_FINDING_STRICT_GENERATE },
+    { name: "生成 Finding 描述-懒人模式", content: PROMPT_FINDING_GENERATE },
+];
+
+export const DEFAULT_PROCESS_TEMPLATES = [
+    { name: "生成 Participant Process", content: PROMPT_PARTICIPANT_PROCESS },
+];

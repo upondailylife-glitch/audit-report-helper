@@ -1,8 +1,8 @@
 {
   "name": "auditreporthelper",
   "displayName": "AuditReportHelper",
-  "description": "",
-  "version": "0.0.3",
+  "description": "审计报告辅助工具 - 支持多 LLM Provider",
+  "version": "0.1.0",
   "publisher": "UPON",
   "engines": {
     "vscode": "^1.107.0"
@@ -21,6 +21,10 @@
       {
         "command": "auditreporthelper.generateParticipantProcess",
         "title": "生成 Participant Process"
+      },
+      {
+        "command": "auditreporthelper.configureProvider",
+        "title": "配置 LLM Provider"
       }
     ],
     "menus": {
@@ -31,19 +35,79 @@
           "group": "navigation"
         },
         {
-          "when": "editorTextFocus", 
+          "when": "editorTextFocus",
           "command": "auditreporthelper.generateParticipantProcess",
           "group": "navigation"
         }
       ]
     },
     "configuration": {
-      "title": "Code Ask AI",
+      "title": "Audit Report Helper",
       "properties": {
+        "auditReportHelper.providers": {
+          "type": "array",
+          "default": [
+            {
+              "name": "OpenAI",
+              "baseUrl": "https://api.openai.com/v1",
+              "apiKey": "",
+              "models": [
+                "gpt-4o",
+                "gpt-4o-mini",
+                "gpt-3.5-turbo"
+              ]
+            },
+            {
+              "name": "DeepSeek",
+              "baseUrl": "https://api.deepseek.com",
+              "apiKey": "",
+              "models": [
+                "deepseek-chat",
+                "deepseek-coder",
+                "deepseek-reasoner"
+              ]
+            }
+          ],
+          "description": "LLM Provider 配置列表",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "description": "Provider 名称"
+              },
+              "baseUrl": {
+                "type": "string",
+                "description": "API Base URL"
+              },
+              "apiKey": {
+                "type": "string",
+                "description": "API Key"
+              },
+              "models": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "可用模型列表"
+              }
+            }
+          }
+        },
+        "auditReportHelper.defaultProvider": {
+          "type": "string",
+          "default": "OpenAI",
+          "description": "默认 LLM Provider"
+        },
+        "auditReportHelper.defaultModel": {
+          "type": "string",
+          "default": "gpt-4o",
+          "description": "默认模型"
+        },
         "codeAskAI.apiKey": {
           "type": "string",
-
-          "description": "请输入你的 DeepSeek API Key (sk-xxxxxxxx)"
+          "description": "[已弃用] 请使用 auditReportHelper.providers 配置",
+          "deprecationMessage": "请迁移到 auditReportHelper.providers 配置"
         }
       }
     }
@@ -51,10 +115,13 @@
   "scripts": {
     "vscode:prepublish": "yarn run package",
     "compile": "yarn run check-types && yarn run lint && node esbuild.js",
+    "compile:webview": "cd webview-ui && npm run build",
     "watch": "npm-run-all -p watch:*",
     "watch:esbuild": "node esbuild.js --watch",
     "watch:tsc": "tsc --noEmit --watch --project tsconfig.json",
-    "package": "yarn run check-types && yarn run lint && node esbuild.js --production",
+    "build": "npm-run-all compile:webview compile",
+    "package": "npm-run-all compile:webview check-types lint package:ext",
+    "package:ext": "node esbuild.js --production",
     "compile-tests": "tsc -p . --outDir out",
     "watch-tests": "tsc -p . -w --outDir out",
     "pretest": "yarn run compile-tests && yarn run compile && yarn run lint",
