@@ -83,6 +83,10 @@ export class WebviewManager {
             case 'SAVE_SETTINGS':
                 await this.handleSaveSettings(message.payload);
                 break;
+
+            case 'OPEN_CONFIGURATION':
+                vscode.commands.executeCommand('auditreporthelper.configureProvider');
+                break;
         }
     }
 
@@ -136,20 +140,30 @@ export class WebviewManager {
      * 保存用户设置
      */
     private async handleSaveSettings(payload: SaveSettingsPayload): Promise<void> {
-        const config = vscode.workspace.getConfiguration('auditReportHelper');
+        try {
+            console.log('Received SAVE_SETTINGS payload:', JSON.stringify(payload, null, 2));
+            const config = vscode.workspace.getConfiguration('auditReportHelper');
 
-        if (payload.provider) {
-            await config.update('defaultProvider', payload.provider, vscode.ConfigurationTarget.Global);
-        }
+            if (payload.provider) {
+                console.log('Updating defaultProvider to:', payload.provider);
+                await config.update('defaultProvider', payload.provider, vscode.ConfigurationTarget.Global);
+            }
 
-        if (payload.model) {
-            await config.update('defaultModel', payload.model, vscode.ConfigurationTarget.Global);
-        }
+            if (payload.model) {
+                console.log('Updating defaultModel to:', payload.model);
+                await config.update('defaultModel', payload.model, vscode.ConfigurationTarget.Global);
+            }
 
-        if (payload.promptOptions) {
-            const current = config.get<PromptOptionValues>('savedPromptOptions') || {};
-            const merged = { ...current, ...payload.promptOptions };
-            await config.update('savedPromptOptions', merged, vscode.ConfigurationTarget.Global);
+            if (payload.promptOptions) {
+                console.log('Updating savedPromptOptions with:', JSON.stringify(payload.promptOptions));
+                const current = config.get<PromptOptionValues>('savedPromptOptions') || {};
+                const merged = { ...current, ...payload.promptOptions };
+                await config.update('savedPromptOptions', merged, vscode.ConfigurationTarget.Global);
+            }
+            console.log('Settings updated successfully');
+        } catch (error) {
+            console.error('Failed to save settings:', error);
+            vscode.window.showErrorMessage(`Failed to save settings: ${error instanceof Error ? error.message : String(error)}`);
         }
     }
 

@@ -22,19 +22,19 @@ export const BUILTIN_PROMPT_OPTIONS: PromptOption[] = [
         ],
         defaultValue: 'bilingual',
     },
-    {
-        id: 'detailLevel',
-        type: 'select',
-        label: '详细程度',
-        category: 'output',
-        order: 2,
-        options: [
-            { value: 'concise', label: '简洁' },
-            { value: 'standard', label: '标准' },
-            { value: 'detailed', label: '详细' },
-        ],
-        defaultValue: 'standard',
-    },
+    // {
+    //     id: 'detailLevel',
+    //     type: 'select',
+    //     label: '详细程度',
+    //     category: 'output',
+    //     order: 2,
+    //     options: [
+    //         { value: 'concise', label: '简洁' },
+    //         { value: 'standard', label: '标准' },
+    //         { value: 'detailed', label: '详细' },
+    //     ],
+    //     defaultValue: 'standard',
+    // },
 
     // ===== 格式类 =====
     {
@@ -50,22 +50,22 @@ export const BUILTIN_PROMPT_OPTIONS: PromptOption[] = [
         ],
         defaultValue: 'both',
     },
-    {
-        id: 'includeLineNumbers',
-        type: 'toggle',
-        label: '包含行号',
-        description: '在代码引用中显示行号',
-        category: 'format',
-        order: 2,
-        defaultValue: true,
-    },
+    // {
+    //     id: 'includeLineNumbers',
+    //     type: 'toggle',
+    //     label: '包含行号',
+    //     description: '在代码引用中显示行号',
+    //     category: 'format',
+    //     order: 2,
+    //     defaultValue: true,
+    // },
 
     // ===== 行为类 =====
     {
         id: 'strictMode',
         type: 'toggle',
-        label: '严格模式',
-        description: '信息不完整时提示而非猜测',
+        label: '信息不完整时提示而非猜测',
+        // description: '信息不完整时提示而非猜测',
         category: 'behavior',
         order: 1,
         defaultValue: false,

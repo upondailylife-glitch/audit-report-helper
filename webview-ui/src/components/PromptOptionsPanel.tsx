@@ -5,6 +5,7 @@ interface PromptOptionsPanelProps {
     options: PromptOption[];
     values: PromptOptionValues;
     onChange: (id: string, value: boolean | string | number) => void;
+    onOpenConfiguration?: () => void;
 }
 
 const CATEGORY_LABELS: Record<string, string> = {
@@ -16,7 +17,7 @@ const CATEGORY_LABELS: Record<string, string> = {
 /**
  * Prompt 选项面板组件
  */
-export function PromptOptionsPanel({ options, values, onChange }: PromptOptionsPanelProps) {
+export function PromptOptionsPanel({ options, values, onChange, onOpenConfiguration }: PromptOptionsPanelProps) {
     // 按分类分组
     const categories = [...new Set(options.map((o) => o.category))];
     const optionsByCategory = categories.map((category) => ({
@@ -44,6 +45,26 @@ export function PromptOptionsPanel({ options, values, onChange }: PromptOptionsP
                     </div>
                 </div>
             ))}
+
+            {/* 配置按钮 */}
+            {onOpenConfiguration && (
+                <div style={{ marginTop: '16px', borderTop: '1px solid var(--vscode-panel-border)', paddingTop: '12px' }}>
+                    <button
+                        onClick={onOpenConfiguration}
+                        style={{
+                            width: '100%',
+                            padding: '6px',
+                            fontSize: '0.9em',
+                            background: 'transparent',
+                            border: '1px solid var(--vscode-button-border, transparent)',
+                            color: 'var(--vscode-textLink-foreground)',
+                            cursor: 'pointer',
+                        }}
+                    >
+                        ⚙ 配置 LLM API Key
+                    </button>
+                </div>
+            )}
         </div>
     );
 }

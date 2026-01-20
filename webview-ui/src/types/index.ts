@@ -79,7 +79,8 @@ export type WebviewToExtensionMessage =
     | { type: 'STOP_GENERATION' }
     | { type: 'SAVE_TEMPLATE'; payload: PromptTemplate }
     | { type: 'SWITCH_MODEL'; payload: { provider: string; model: string } }
-    | { type: 'SAVE_SETTINGS'; payload: SaveSettingsPayload };
+    | { type: 'SAVE_SETTINGS'; payload: SaveSettingsPayload }
+    | { type: 'OPEN_CONFIGURATION' };
 
 // 保存设置参数
 export interface SaveSettingsPayload {

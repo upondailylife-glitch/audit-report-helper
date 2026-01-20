@@ -57,7 +57,7 @@ export function ProcessPage({ initData }: ProcessPageProps) {
             code,
             provider: selectedProvider,
             model: selectedModel,
-            options: {},
+            options: { type: 'process' },
         });
     };
 

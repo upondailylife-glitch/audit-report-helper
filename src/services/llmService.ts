@@ -5,6 +5,17 @@
 import * as vscode from 'vscode';
 import { configService } from './configService';
 import type { LLMProvider, PromptOptionValues } from '../types';
+import {
+    PROMPT_SECTION_ROLE,
+    PROMPT_SECTION_TITLE_RULES,
+    PROMPT_SECTION_DESC_RULES,
+    PROMPT_SECTION_CODE_REF_RULES,
+    PROMPT_SECTION_REPAIR_RULES,
+    PROMPT_SECTION_OUTPUT_FORMAT_BILINGUAL,
+    PROMPT_SECTION_OUTPUT_FORMAT_ZH,
+    PROMPT_SECTION_OUTPUT_FORMAT_EN,
+    PROMPT_SECTION_NO_REPAIR_RULES
+} from '../constants/prompts';
 
 export interface LLMCallOptions {
     provider: string;
@@ -59,8 +70,15 @@ export class LLMService {
         // 构建请求 URL
         const fetchUrl = this.buildFetchUrl(provider);
 
+        // console.log(options.options);
+
         // 构建完整 Prompt
         const fullContent = this.buildFullPrompt(prompt, code, options.options);
+
+        // 打印完整 Prompt 到控制台 (Debug)
+        console.log('--- Full Prompt Start ---');
+        console.log(fullContent);
+        console.log('--- Full Prompt End ---');
 
         onStart?.();
 
@@ -119,30 +137,75 @@ export class LLMService {
     /**
      * 构建完整 Prompt
      */
-    private buildFullPrompt(prompt: string, code: string, options: PromptOptionValues): string {
-        // 根据选项调整 Prompt
-        let adjustedPrompt = prompt;
-
-        // 处理输出语言选项
-        if (options.outputLanguage === 'zh') {
-            adjustedPrompt = adjustedPrompt.replace(/你的输出要中英对照.*?格式：/s, '你的输出只需要中文，格式：');
-        } else if (options.outputLanguage === 'en') {
-            adjustedPrompt = adjustedPrompt.replace(/你的输出要中英对照.*?格式：/s, '你的输出只需要英文，格式：');
+    private buildFullPrompt(basePrompt: string, code: string, options: PromptOptionValues): string {
+        // 如果是 Process 生成任务，使用简单 Prompt 构造
+        if (options.type === 'process') {
+            return `${basePrompt}\n\n目标代码片段:\n\`\`\`\n${code}\n\`\`\``;
         }
 
-        // 处理详细程度
-        if (options.detailLevel === 'concise') {
-            adjustedPrompt += '\n\n请尽量简洁，省略不必要的细节。';
-        } else if (options.detailLevel === 'detailed') {
-            adjustedPrompt += '\n\n请提供详细的分析和解释。';
+        // 默认 Finding 生成任务
+        const parts: string[] = [];
+
+        // 1. 角色定义
+        parts.push(PROMPT_SECTION_ROLE);
+
+        // 2. 标题规则
+        parts.push(PROMPT_SECTION_TITLE_RULES);
+
+        // 3. 问题描述规则
+        parts.push(PROMPT_SECTION_DESC_RULES);
+
+        // 4. 代码引用规则
+        parts.push(PROMPT_SECTION_CODE_REF_RULES);
+
+        // 动态代码引用规则补充
+        if (options.codeRefStyle === 'inline') {
+            parts.push(`**引用补充**：请优先使用行内代码格式（如 \`variable\`）引用变量或函数名。`);
+        } else if (options.codeRefStyle === 'block') {
+            parts.push(`**引用补充**：请优先使用代码块格式引用代码逻辑。`);
         }
 
-        // 处理严格模式
+        if (options.includeLineNumbers) {
+            parts.push(`**引用补充**：在引用多行代码时，请尽可能保留或标注行号以便定位。`);
+        }
+
+        // 5. 修复建议规则
+        if (options.autoSuggestFix !== false) {
+            parts.push(PROMPT_SECTION_REPAIR_RULES);
+        } else {
+            parts.push(PROMPT_SECTION_NO_REPAIR_RULES);
+        }
+
+        // 6. 输出格式要求
+        const lang = options.outputLanguage;
+        if (lang === 'bilingual' || !lang) {
+            parts.push(PROMPT_SECTION_OUTPUT_FORMAT_BILINGUAL);
+        } else if (lang === 'zh') {
+            parts.push(PROMPT_SECTION_OUTPUT_FORMAT_ZH);
+        } else if (lang === 'en') {
+            parts.push(PROMPT_SECTION_OUTPUT_FORMAT_EN);
+        }
+
+        // // 7. 详细程度
+        // const detail = options.detailLevel;
+        // if (detail === 'concise') {
+        //     parts.push(`**详细程度**：请保持描述简洁干练，直击要点，省略不必要的修饰语。`);
+        // } else if (detail === 'detailed') {
+        //     parts.push(`**详细程度**：请提供详尽的深入分析，充分解释漏洞的成因 (Root Cause) 和潜在影响 (Impact)。`);
+        // }
+
+        // 8. 严格模式 (部分已经在 Input Placeholder 中涵盖，这里做补充)
         if (options.strictMode) {
-            adjustedPrompt += '\n\n如果信息不完整，请明确指出缺少哪些信息，不要猜测。';
+            parts.push(`**重要提醒**：请严格基于提供的代码证据，严禁猜测。`);
         }
 
-        return `${adjustedPrompt}\n\n代码片段:\n\`\`\`\n${code}\n\`\`\``;
+        // 9. 用户输入/模板结尾 (Input Placeholder) + 目标代码
+        // basePrompt 包含了 template.content (即 Placeholder) + 用户输入
+        parts.push(basePrompt);
+
+        parts.push(`\n\n目标代码片段:\n\`\`\`\n${code}\n\`\`\``);
+
+        return parts.join('\n\n');
     }
 
     /**

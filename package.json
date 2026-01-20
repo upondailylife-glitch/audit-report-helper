@@ -101,8 +101,13 @@
         },
         "auditReportHelper.defaultModel": {
           "type": "string",
-          "default": "gpt-4o",
+          "default": "deepseek-chat",
           "description": "默认模型"
+        },
+        "auditReportHelper.savedPromptOptions": {
+          "type": "object",
+          "default": {},
+          "description": "保存的 Prompt 选项设置"
         },
         "codeAskAI.apiKey": {
           "type": "string",

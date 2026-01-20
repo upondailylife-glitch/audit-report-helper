@@ -42,6 +42,14 @@ textarea {
   font-size: inherit;
 }
 
+input[type="checkbox"] {
+  width: auto;
+  padding: 0;
+  margin: 0;
+  border: none;
+  background: transparent;
+}
+
 select:focus,
 input:focus,
 textarea:focus {
@@ -178,6 +186,10 @@ button:disabled {
   display: flex;
   align-items: center;
   gap: 8px;
+}
+
+.option-item--toggle {
+  flex-wrap: wrap;
 }
 
 .option-item--toggle .option-item__label {

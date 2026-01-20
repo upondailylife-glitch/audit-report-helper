@@ -58,6 +58,10 @@ export function useVsCode() {
         [postMessage]
     );
 
+    const openConfiguration = useCallback(() => {
+        postMessage({ type: 'OPEN_CONFIGURATION' });
+    }, [postMessage]);
+
     return {
         postMessage,
         callLLM,
@@ -65,5 +69,6 @@ export function useVsCode() {
         switchModel,
         saveSettings,
         savePromptOptions,
+        openConfiguration,
     };
 }

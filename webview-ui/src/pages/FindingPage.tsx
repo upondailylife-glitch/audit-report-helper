@@ -20,7 +20,7 @@ interface FindingPageProps {
  * Finding 信息生成页面
  */
 export function FindingPage({ initData }: FindingPageProps) {
-    const { callLLM, stopGeneration, switchModel, savePromptOptions } = useVsCode();
+    const { callLLM, stopGeneration, switchModel, savePromptOptions, openConfiguration } = useVsCode();
     const { content, status, error } = useLLMStream();
 
     // 代码状态
@@ -74,7 +74,7 @@ export function FindingPage({ initData }: FindingPageProps) {
             code,
             provider: selectedProvider,
             model: selectedModel,
-            options: optionValues,
+            options: { ...optionValues, type: 'finding' },
         });
     };
 
@@ -133,6 +133,7 @@ export function FindingPage({ initData }: FindingPageProps) {
                     options={initData.promptOptions}
                     values={optionValues}
                     onChange={handleOptionChange}
+                    onOpenConfiguration={openConfiguration}
                 />
             )}
 
