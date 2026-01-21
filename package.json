@@ -2,10 +2,10 @@
   "name": "auditreporthelper",
   "displayName": "AuditReportHelper",
   "description": "审计报告辅助工具 - 支持多 LLM Provider",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "publisher": "UPON",
   "engines": {
-    "vscode": "^1.107.0"
+    "vscode": "^1.105.0"
   },
   "categories": [
     "Other"
@@ -135,7 +135,7 @@
     "test": "vscode-test"
   },
   "devDependencies": {
-    "@types/vscode": "^1.107.0",
+    "@types/vscode": "^1.105.0",
     "@types/mocha": "^10.0.10",
     "@types/node": "22.x",
     "typescript-eslint": "^8.48.1",
