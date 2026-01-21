@@ -8,6 +8,7 @@ interface UseLLMStreamResult {
     status: StreamStatus;
     error: string | null;
     reset: () => void;
+    setContent: (content: string) => void;
 }
 
 /**
@@ -54,5 +55,5 @@ export function useLLMStream(): UseLLMStreamResult {
         setError(null);
     }, []);
 
-    return { content, status, error, reset };
+    return { content, status, error, reset, setContent };
 }

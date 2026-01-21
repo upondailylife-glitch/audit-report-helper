@@ -21,7 +21,7 @@ interface FindingPageProps {
  */
 export function FindingPage({ initData }: FindingPageProps) {
     const { callLLM, stopGeneration, switchModel, savePromptOptions, openConfiguration } = useVsCode();
-    const { content, status, error } = useLLMStream();
+    const { content, status, error, setContent } = useLLMStream();
 
     // 代码状态
     const [code, setCode] = useState(initData.code);
@@ -146,7 +146,7 @@ export function FindingPage({ initData }: FindingPageProps) {
             />
 
             {/* 响应面板 */}
-            <ResponsePanel content={content} status={status} error={error} />
+            <ResponsePanel content={content} status={status} error={error} onChange={setContent} />
         </div>
     );
 }

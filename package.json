@@ -2,7 +2,7 @@
   "name": "auditreporthelper",
   "displayName": "AuditReportHelper",
   "description": "审计报告辅助工具 - 支持多 LLM Provider",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "publisher": "UPON",
   "engines": {
     "vscode": "^1.107.0"

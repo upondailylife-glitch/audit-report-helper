@@ -18,7 +18,7 @@ interface ProcessPageProps {
  */
 export function ProcessPage({ initData }: ProcessPageProps) {
     const { callLLM, stopGeneration, switchModel } = useVsCode();
-    const { content, status, error } = useLLMStream();
+    const { content, status, error, setContent } = useLLMStream();
 
     // 代码状态
     const [code, setCode] = useState(initData.code);
@@ -99,7 +99,7 @@ export function ProcessPage({ initData }: ProcessPageProps) {
             />
 
             {/* 响应面板 */}
-            <ResponsePanel content={content} status={status} error={error} />
+            <ResponsePanel content={content} status={status} error={error} onChange={setContent} />
         </div>
     );
 }

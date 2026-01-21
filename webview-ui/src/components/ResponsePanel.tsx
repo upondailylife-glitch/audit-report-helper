@@ -5,12 +5,13 @@ interface ResponsePanelProps {
     content: string;
     status: StreamStatus;
     error: string | null;
+    onChange?: (content: string) => void;
 }
 
 /**
  * AI 响应展示面板
  */
-export function ResponsePanel({ content, status, error }: ResponsePanelProps) {
+export function ResponsePanel({ content, status, error, onChange }: ResponsePanelProps) {
     const textareaRef = useRef<HTMLTextAreaElement>(null);
 
     // 自动滚动到底部
@@ -31,7 +32,7 @@ export function ResponsePanel({ content, status, error }: ResponsePanelProps) {
                 ref={textareaRef}
                 className="response-panel__content"
                 value={content}
-                readOnly
+                onChange={(e) => onChange?.(e.target.value)}
                 placeholder="AI response will appear here..."
             />
         </div>
