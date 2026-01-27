@@ -138,27 +138,31 @@ export class LLMService {
      * 构建完整 Prompt
      */
     private buildFullPrompt(basePrompt: string, code: string, options: PromptOptionValues): string {
-        // 如果是 Process 生成任务，使用简单 Prompt 构造
-        if (options.type === 'process') {
-            return `${basePrompt}\n\n目标代码片段:\n\`\`\`\n${code}\n\`\`\``;
+        switch (options.type) {
+            case 'process':
+                return this.buildProcessPrompt(basePrompt, code, options);
+            case 'finding':
+                return this.buildFindingPrompt(basePrompt, code, options);
+            default:
+                return this.buildFindingPrompt(basePrompt, code, options);
         }
+    }
 
+    private buildProcessPrompt(basePrompt: string, code: string, options: PromptOptionValues): string {
+        return `${basePrompt}\n\n目标代码片段:\n\`\`\`\n${code}\n\`\`\``;
+    }
+
+    private buildFindingPrompt(basePrompt: string, code: string, options: PromptOptionValues): string {
         // 默认 Finding 生成任务
         const parts: string[] = [];
-
         // 1. 角色定义
         parts.push(PROMPT_SECTION_ROLE);
-
         // 2. 标题规则
         parts.push(PROMPT_SECTION_TITLE_RULES);
-
         // 3. 问题描述规则
         parts.push(PROMPT_SECTION_DESC_RULES);
-
         // 4. 代码引用规则
         parts.push(PROMPT_SECTION_CODE_REF_RULES);
-
-        // 动态代码引用规则补充
         if (options.codeRefStyle === 'inline') {
             parts.push(`**引用补充**：请优先使用行内代码格式（如 \`variable\`）引用变量或函数名。`);
         } else if (options.codeRefStyle === 'block') {
@@ -168,8 +172,6 @@ export class LLMService {
         if (options.includeLineNumbers) {
             parts.push(`**引用补充**：在引用多行代码时，请尽可能保留或标注行号以便定位。`);
         }
-
-        // 5. 修复建议规则
         if (options.autoSuggestFix !== false) {
             parts.push(PROMPT_SECTION_REPAIR_RULES);
         } else {
@@ -186,21 +188,10 @@ export class LLMService {
             parts.push(PROMPT_SECTION_OUTPUT_FORMAT_EN);
         }
 
-        // // 7. 详细程度
-        // const detail = options.detailLevel;
-        // if (detail === 'concise') {
-        //     parts.push(`**详细程度**：请保持描述简洁干练，直击要点，省略不必要的修饰语。`);
-        // } else if (detail === 'detailed') {
-        //     parts.push(`**详细程度**：请提供详尽的深入分析，充分解释漏洞的成因 (Root Cause) 和潜在影响 (Impact)。`);
-        // }
-
         // 8. 严格模式 (部分已经在 Input Placeholder 中涵盖，这里做补充)
         if (options.strictMode) {
             parts.push(`**重要提醒**：请严格基于提供的代码证据，严禁猜测。`);
         }
-
-        // 9. 用户输入/模板结尾 (Input Placeholder) + 目标代码
-        // basePrompt 包含了 template.content (即 Placeholder) + 用户输入
         parts.push(basePrompt);
 
         parts.push(`\n\n目标代码片段:\n\`\`\`\n${code}\n\`\`\``);

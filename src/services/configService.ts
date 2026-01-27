@@ -43,6 +43,7 @@ export class ConfigService {
         // 尝试从新配置读取
         let providers = config.get<LLMProvider[]>('providers');
 
+        // TODO:remove 
         // 如果没有新配置，尝试兼容旧配置
         if (!providers || providers.length === 0) {
             const oldConfig = vscode.workspace.getConfiguration('codeAskAI');
