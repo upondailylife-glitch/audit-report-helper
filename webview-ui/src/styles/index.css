@@ -275,6 +275,154 @@ button:disabled {
   line-height: 1.6;
 }
 
+.response-panel__body {
+  display: flex;
+  gap: 12px;
+}
+
+.response-panel__body .response-panel__content {
+  flex: 1;
+  min-width: 0;
+}
+
+.response-panel__body--split .response-panel__editor {
+  flex: 1;
+}
+
+.response-panel__body--split .response-panel__markdown-preview {
+  flex: 1;
+}
+
+.response-panel__markdown-toggle {
+  margin-bottom: 8px;
+  padding: 4px 0;
+}
+
+.response-panel__toggle-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  font-size: 0.9em;
+  color: var(--vscode-descriptionForeground);
+}
+
+.response-panel__toggle-label:hover {
+  color: var(--vscode-foreground);
+}
+
+.response-panel__markdown-preview {
+  padding: 12px;
+  background: var(--vscode-input-background);
+  border: 1px solid var(--vscode-input-border, #3c3c3c);
+  border-radius: 2px;
+  overflow-y: auto;
+  max-height: 400px;
+}
+
+/* Markdown 元素样式 */
+.response-panel__markdown-preview h1,
+.response-panel__markdown-preview h2,
+.response-panel__markdown-preview h3,
+.response-panel__markdown-preview h4,
+.response-panel__markdown-preview h5,
+.response-panel__markdown-preview h6 {
+  margin: 16px 0 8px 0;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.response-panel__markdown-preview h1 {
+  font-size: 1.5em;
+}
+
+.response-panel__markdown-preview h2 {
+  font-size: 1.3em;
+}
+
+.response-panel__markdown-preview h3 {
+  font-size: 1.15em;
+}
+
+.response-panel__markdown-preview h4 {
+  font-size: 1.05em;
+}
+
+.response-panel__markdown-preview p {
+  margin: 8px 0;
+}
+
+.response-panel__markdown-preview ul,
+.response-panel__markdown-preview ol {
+  margin: 8px 0;
+  padding-left: 24px;
+}
+
+.response-panel__markdown-preview li {
+  margin: 4px 0;
+}
+
+.response-panel__markdown-preview code {
+  background: var(--vscode-textCodeBlock-background, rgba(0, 0, 0, 0.2));
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-family: var(--vscode-editor-font-family, 'Consolas', monospace);
+  font-size: 0.9em;
+}
+
+.response-panel__markdown-preview pre {
+  background: var(--vscode-textCodeBlock-background, rgba(0, 0, 0, 0.2));
+  padding: 12px;
+  border-radius: 4px;
+  overflow-x: auto;
+  margin: 12px 0;
+}
+
+.response-panel__markdown-preview pre code {
+  background: transparent;
+  padding: 0;
+}
+
+.response-panel__markdown-preview blockquote {
+  margin: 12px 0;
+  padding: 8px 16px;
+  border-left: 3px solid var(--vscode-textLink-foreground);
+  background: var(--vscode-textBlockQuote-background, rgba(0, 0, 0, 0.1));
+  color: var(--vscode-textBlockQuote-foreground);
+}
+
+.response-panel__markdown-preview table {
+  border-collapse: collapse;
+  margin: 12px 0;
+  width: 100%;
+}
+
+.response-panel__markdown-preview th,
+.response-panel__markdown-preview td {
+  border: 1px solid var(--vscode-panel-border);
+  padding: 8px 12px;
+  text-align: left;
+}
+
+.response-panel__markdown-preview th {
+  background: var(--vscode-sideBar-background);
+  font-weight: 600;
+}
+
+.response-panel__markdown-preview hr {
+  border: none;
+  border-top: 1px solid var(--vscode-panel-border);
+  margin: 16px 0;
+}
+
+.response-panel__markdown-preview a {
+  color: var(--vscode-textLink-foreground);
+}
+
+.response-panel__markdown-preview a:hover {
+  color: var(--vscode-textLink-activeForeground);
+}
+
 /* ===== Action Buttons ===== */
 
 .action-buttons {
