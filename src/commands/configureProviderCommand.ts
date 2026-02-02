@@ -48,6 +48,7 @@ async function showProviderConfigWizard() {
         {
             title: 'LLM Provider 配置',
             placeHolder: '选择操作',
+            ignoreFocusOut: true,
         }
     );
 
@@ -80,6 +81,7 @@ async function addProvider() {
         {
             title: '选择 Provider 类型',
             placeHolder: '选择要添加的 LLM Provider',
+            ignoreFocusOut: true,
         }
     );
 
@@ -104,6 +106,7 @@ async function addProvider() {
                 }
                 return null;
             },
+            ignoreFocusOut: true,
         });
 
         if (!inputUrl) return;
@@ -120,6 +123,7 @@ async function addProvider() {
                 if (!value) return '名称不能为空';
                 return null;
             },
+            ignoreFocusOut: true,
         });
 
         if (!inputName) return;
@@ -133,6 +137,7 @@ async function addProvider() {
                 if (!value) return '至少需要一个模型';
                 return null;
             },
+            ignoreFocusOut: true,
         });
 
         if (!inputModels) return;
@@ -149,6 +154,7 @@ async function addProvider() {
             if (!value) return 'API Key 不能为空';
             return null;
         },
+        ignoreFocusOut: true,
     });
 
     if (!apiKey) return;
@@ -186,6 +192,7 @@ async function editProvider() {
         {
             title: '选择要编辑的 Provider',
             placeHolder: '选择一个 Provider',
+            ignoreFocusOut: true,
         }
     );
 
@@ -199,6 +206,7 @@ async function editProvider() {
         prompt: '输入新的 API Key（留空保持不变）',
         password: true,
         placeHolder: '留空保持当前值',
+        ignoreFocusOut: true,
     });
 
     // 如果用户取消了，不做任何更改
@@ -213,6 +221,7 @@ async function editProvider() {
             if (!value) return 'Base URL 不能为空';
             return null;
         },
+        ignoreFocusOut: true,
     });
 
     if (!newBaseUrl) return;
@@ -249,6 +258,7 @@ async function deleteProvider() {
         {
             title: '选择要删除的 Provider',
             placeHolder: '选择一个 Provider',
+            ignoreFocusOut: true,
         }
     );
 

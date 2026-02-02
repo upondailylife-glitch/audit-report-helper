@@ -18,6 +18,7 @@ export const PROMPT_SECTION_TITLE_RULES = `
 2.某文件存在某漏洞，如"Potential Price Manipulation in \`oracle\`"或者"Missing Access Control in \`oracle\`"
 3.对某问题的讨论："Disscussion on Protocol Oracle Design"
 4. 标题不许包括文件名
+5. 如果涉及到函数名称，你应该使用反引号包括函数名，不要参数，但是需要在后面添加括号使其与变量区分，如\`setGasfee()\`。
 如果你遇到的情况不符合上面几种，可以酌情考虑取一个合适的标题
 `;
 

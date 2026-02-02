@@ -47,20 +47,11 @@ export class ConfigService {
         // 如果没有新配置，尝试兼容旧配置
         if (!providers || providers.length === 0) {
             const oldConfig = vscode.workspace.getConfiguration('codeAskAI');
-            const oldApiKey = oldConfig.get<string>('apiKey');
+            // const oldApiKey = oldConfig.get<string>('apiKey');
             const oldBaseUrl = oldConfig.get<string>('baseUrl') || 'https://api.deepseek.com';
             const oldModel = oldConfig.get<string>('model') || 'deepseek-coder';
 
-            if (oldApiKey) {
-                providers = [{
-                    name: 'DeepSeek (Legacy)',
-                    baseUrl: oldBaseUrl,
-                    apiKey: oldApiKey,
-                    models: [oldModel],
-                }];
-            } else {
-                providers = DEFAULT_PROVIDERS;
-            }
+            providers = DEFAULT_PROVIDERS;
         }
 
         const defaultProvider = config.get<string>('defaultProvider') || providers[0]?.name || 'OpenAI';

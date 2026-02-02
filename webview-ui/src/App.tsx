@@ -14,6 +14,9 @@ export function App() {
             const message = event.data;
             if (message.type === 'INIT_DATA') {
                 setInitData(message.payload);
+            } else if (message.type === 'CONFIG_UPDATE') {
+                // 配置更新时，更新 llmConfig
+                setInitData((prev) => prev ? { ...prev, llmConfig: message.payload } : null);
             }
         };
 

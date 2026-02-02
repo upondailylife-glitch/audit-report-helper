@@ -44,6 +44,15 @@ export class WebviewManager {
         // Panel 关闭时清理
         this.panel.onDidDispose(() => this.dispose(), null, this.disposables);
 
+        // 监听配置变更，自动推送更新到 Webview
+        this.disposables.push(
+            vscode.workspace.onDidChangeConfiguration((e) => {
+                if (e.affectsConfiguration('auditReportHelper')) {
+                    this.sendConfigUpdate();
+                }
+            })
+        );
+
         // 发送初始化数据
         this.postMessage({ type: 'INIT_DATA', payload: initData });
     }
@@ -165,6 +174,15 @@ export class WebviewManager {
             console.error('Failed to save settings:', error);
             vscode.window.showErrorMessage(`Failed to save settings: ${error instanceof Error ? error.message : String(error)}`);
         }
+    }
+
+    /**
+     * 发送配置更新到 Webview
+     */
+    private sendConfigUpdate(): void {
+        const { configService } = require('../services/configService');
+        const llmConfig = configService.getLLMConfig();
+        this.postMessage({ type: 'CONFIG_UPDATE', payload: llmConfig });
     }
 
     /**
