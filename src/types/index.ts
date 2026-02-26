@@ -16,6 +16,10 @@ export interface LLMConfig {
     defaultModel: string;
 }
 
+// ===== Resolution 类型 =====
+export type ResolutionType = 'fixed' | 'ack' | 'partially_fixed';
+export type HashType = 'none' | 'commit' | 'code';
+
 // ===== Prompt 选项类型 =====
 export type PromptOptionType = 'toggle' | 'select' | 'number' | 'text';
 
@@ -105,7 +109,7 @@ export interface InitData {
     lineStart?: number;
     lineEnd?: number;
     templates: PromptTemplate[];
-    pageType: 'finding' | 'process';
+    pageType: 'finding' | 'process' | 'resolution';
     llmConfig: LLMConfig;
     promptOptions: PromptOption[];
     savedOptionValues?: PromptOptionValues;

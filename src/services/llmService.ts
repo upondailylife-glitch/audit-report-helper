@@ -14,7 +14,12 @@ import {
     PROMPT_SECTION_OUTPUT_FORMAT_BILINGUAL,
     PROMPT_SECTION_OUTPUT_FORMAT_ZH,
     PROMPT_SECTION_OUTPUT_FORMAT_EN,
-    PROMPT_SECTION_NO_REPAIR_RULES
+    PROMPT_SECTION_NO_REPAIR_RULES,
+    PROMPT_RESOLUTION_ROLE,
+    PROMPT_RESOLUTION_FIXED,
+    PROMPT_RESOLUTION_ACK,
+    PROMPT_RESOLUTION_PARTIALLY_FIXED,
+    PROMPT_RESOLUTION_RULES,
 } from '../constants/prompts';
 
 export interface LLMCallOptions {
@@ -143,6 +148,8 @@ export class LLMService {
                 return this.buildProcessPrompt(basePrompt, code, options);
             case 'finding':
                 return this.buildFindingPrompt(basePrompt, code, options);
+            case 'resolution':
+                return this.buildResolutionPrompt(basePrompt, options);
             default:
                 return this.buildFindingPrompt(basePrompt, code, options);
         }
@@ -150,6 +157,70 @@ export class LLMService {
 
     private buildProcessPrompt(basePrompt: string, code: string, options: PromptOptionValues): string {
         return `${basePrompt}\n\n目标代码片段:\n\`\`\`\n${code}\n\`\`\``;
+    }
+
+    private buildResolutionPrompt(basePrompt: string, options: PromptOptionValues): string {
+        const parts: string[] = [];
+
+        // 1. 角色定义
+        parts.push(PROMPT_RESOLUTION_ROLE);
+
+        // 2. 按类型选对应规则段
+        const resolutionType = options.resolutionType as string;
+        if (resolutionType === 'fixed') {
+            parts.push(PROMPT_RESOLUTION_FIXED);
+        } else if (resolutionType === 'ack') {
+            parts.push(PROMPT_RESOLUTION_ACK);
+        } else if (resolutionType === 'partially_fixed') {
+            parts.push(PROMPT_RESOLUTION_PARTIALLY_FIXED);
+        }
+
+        // 3. 通用规则
+        parts.push(PROMPT_RESOLUTION_RULES);
+
+        // 4. 用户填写的结构化数据
+        const dataLines: string[] = ['[用户提供的信息]'];
+
+        dataLines.push(`Resolution 类型: ${resolutionType}`);
+
+        const hashType = options.hashType as string || 'none';
+        const hashValue = options.hashValue as string || '';
+        dataLines.push(`hashType: ${hashType}`);
+        if (hashType !== 'none' && hashValue) {
+            dataLines.push(`Hash 値: ${hashValue}`);
+        }
+
+        // 改进描述 (Fixed / Partially Fixed)
+        if (options.improvementDesc) {
+            dataLines.push(`改进描述: ${options.improvementDesc}`);
+        }
+
+        // 遗留问题 (Partially Fixed)
+        if (options.residualIssues) {
+            dataLines.push(`遗留问题: ${options.residualIssues}`);
+        }
+
+        // 客户说明 (Ack / Partially Fixed)
+        if (options.clientStatement) {
+            dataLines.push(`客户说明: ${options.clientStatement}`);
+        }
+
+        // 可选：原始 Finding 描述
+        if (options.findingContext) {
+            dataLines.push(`原始 Finding 描述: ${options.findingContext}`);
+        }
+
+        // 补充说明（最高优先级）
+        if (options.userNote) {
+            dataLines.push(`补充说明（最高优先级）: ${options.userNote}`);
+        }
+
+        parts.push(dataLines.join('\n'));
+
+        // 5. 指令句（basePrompt）
+        parts.push(basePrompt);
+
+        return parts.join('\n\n');
     }
 
     private buildFindingPrompt(basePrompt: string, code: string, options: PromptOptionValues): string {

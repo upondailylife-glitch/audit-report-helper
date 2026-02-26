@@ -134,3 +134,79 @@ export const DEFAULT_FINDING_TEMPLATES = [
 export const DEFAULT_PROCESS_TEMPLATES = [
     { name: "生成 Participant Process", content: PROMPT_PARTICIPANT_PROCESS },
 ];
+
+// ============================================================================
+// Resolution Prompt 常量
+// ============================================================================
+
+// 角色定义（所有类型共用）
+export const PROMPT_RESOLUTION_ROLE = `
+你是一个专业的安全审计报告 Resolution 撰写助手。
+你的任务是将用户提供的信息整理为规范、地道的英文 Resolution 段落。
+输出只包含 Resolution 正文，不要附加任何解释或前缀。
+英文表达要简洁专业，让英文初学者也能轻松读懂。
+`;
+
+// Fixed 类型规则
+export const PROMPT_RESOLUTION_FIXED = `
+当前 Resolution 类型为 Fixed（客户已修复该问题）。
+
+标准输出格式参考（根据用户提供的 hashType 字段三选一）：
+
+情况 A - hashType 为 "commit"（有 commit hash）：
+  "The team adopted our advice and fixed this issue by <改进描述>, which can be found at <commithash>."
+
+情况 B - hashType 为 "code"（项目方以压缩包提供代码，无 git 仓库）：
+  "The team adopted our advice and fixed this issue by <改进描述>. The hash of the improved code is: <codehash>."
+
+情况 C - hashType 为 "none"（无 hash）：
+  "The team adopted our advice and fixed this issue by <改进描述>."
+
+根据用户信息中的 hashType 字段自动选择对应情况。
+`;
+
+// Ack 类型规则
+export const PROMPT_RESOLUTION_ACK = `
+当前 Resolution 类型为 Ack（客户承认该问题，但不打算修复）。
+
+标准输出格式参考：
+  "The team acknowledged this issue and state that "<WHY>", so no modifications will be made to the current version."
+
+<WHY> 处使用用户提供的客户说明，保留其原意，用规范英文表达。
+`;
+
+// Partially Fixed 类型规则
+export const PROMPT_RESOLUTION_PARTIALLY_FIXED = `
+当前 Resolution 类型为 Partially Fixed（客户部分修复，遗留问题不再处理）。
+
+标准输出格式参考（根据用户提供的 hashType 字段三选一）：
+
+情况 A - hashType 为 "commit"（有 commit hash）：
+  "The team adopted our advice and partially fixed this issue by <改进描述>, which can be found at <commithash>. However, <遗留问题> still exist in current code version, the team acknowledged this/these issue and state that "<WHY>", so no modifications will be made to the current version."
+
+情况 B - hashType 为 "code"（压缩包 hash）：
+  "The team adopted our advice and partially fixed this issue by <改进描述>. The hash of the improved code is: <codehash>. However, <遗留问题> still exist in current code version, the team acknowledged this/these issue and state that "<WHY>", so no modifications will be made to the current version."
+
+情况 C - hashType 为 "none"（无 hash）：
+  "The team adopted our advice and partially fixed this issue by <改进描述>. However, <遗留问题> still exist in current code version, the team acknowledged this/these issue and state that "<WHY>", so no modifications will be made to the current version."
+
+根据用户信息中的 hashType 字段自动选择对应情况。
+`;
+
+// 通用规则（所有类型共用）
+export const PROMPT_RESOLUTION_RULES = `
+重要规则：
+- 如果用户提供了"补充说明"字段，其内容具有最高优先级，与格式参考冲突时以补充说明为准
+- 各描述字段由用户以自然语言填写，你需要整理为规范英文，保留原意进行润色，不要逐字翻译
+- 如果用户提供了"原始 Finding 描述"字段，请将其作为背景上下文理解，不要直接复制到输出中
+`;
+
+// 默认模板（作为 basePrompt 用于触发，占位指令）
+export const PROMPT_RESOLUTION_GENERATE = `
+请根据上方用户提供的信息，输出规范的 Resolution 正文。
+`;
+
+export const DEFAULT_RESOLUTION_TEMPLATES = [
+    { name: "生成 Finding Resolution", content: PROMPT_RESOLUTION_GENERATE },
+];
+

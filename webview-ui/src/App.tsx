@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { FindingPage, ProcessPage } from './pages';
+import { FindingPage, ProcessPage, ResolutionPage } from './pages';
 import type { InitData, ExtensionToWebviewMessage } from './types';
 import './styles/index.css';
 
@@ -39,6 +39,8 @@ export function App() {
             return <FindingPage initData={initData} />;
         case 'process':
             return <ProcessPage initData={initData} />;
+        case 'resolution':
+            return <ResolutionPage initData={initData} />;
         default:
             return <div className="app-error">Unknown page type</div>;
     }

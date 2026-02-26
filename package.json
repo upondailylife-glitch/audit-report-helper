@@ -23,6 +23,10 @@
         "title": "生成 Participant Process"
       },
       {
+        "command": "auditreporthelper.generateResolution",
+        "title": "生成 Finding Resolution"
+      },
+      {
         "command": "auditreporthelper.configureProvider",
         "title": "配置 LLM Provider"
       }
@@ -37,6 +41,10 @@
         {
           "when": "editorTextFocus",
           "command": "auditreporthelper.generateParticipantProcess",
+          "group": "navigation"
+        },
+        {
+          "command": "auditreporthelper.generateResolution",
           "group": "navigation"
         }
       ]
