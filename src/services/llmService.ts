@@ -193,6 +193,8 @@ export class LLMService {
         // 改进描述 (Fixed / Partially Fixed)
         if (options.improvementDesc) {
             dataLines.push(`改进描述: ${options.improvementDesc}`);
+        } else if (resolutionType === 'fixed' || resolutionType === 'partially_fixed') {
+            dataLines.push(`改进描述: 未提供，请使用默认指代短语 "implementing the recommended fix"`);
         }
 
         // 遗留问题 (Partially Fixed)

@@ -31,6 +31,7 @@ export function ResolutionPage({ initData }: ResolutionPageProps) {
     const [hashValue, setHashValue] = useState('');
 
     // 动态字段
+    const [showImprovementDesc, setShowImprovementDesc] = useState(false); // 控制改进描述是否显示
     const [improvementDesc, setImprovementDesc] = useState('');  // Fixed / Partially Fixed
     const [residualIssues, setResidualIssues] = useState('');    // Partially Fixed
     const [clientStatement, setClientStatement] = useState('');  // Ack / Partially Fixed
@@ -61,6 +62,7 @@ export function ResolutionPage({ initData }: ResolutionPageProps) {
     const handleResolutionTypeChange = (type: ResolutionType) => {
         setResolutionType(type);
         setImprovementDesc('');
+        setShowImprovementDesc(false);
         setResidualIssues('');
         setClientStatement('');
     };
@@ -77,7 +79,7 @@ export function ResolutionPage({ initData }: ResolutionPageProps) {
         if (hashType !== 'none' && hashValue) {
             options.hashValue = hashValue;
         }
-        if (improvementDesc) {
+        if (showImprovementDesc && improvementDesc) {
             options.improvementDesc = improvementDesc;
         }
         if (residualIssues) {
@@ -183,14 +185,24 @@ export function ResolutionPage({ initData }: ResolutionPageProps) {
             {/* 动态输入区：改进描述（Fixed / Partially Fixed） */}
             {(resolutionType === 'fixed' || resolutionType === 'partially_fixed') && (
                 <div className="resolution-page__section">
-                    <label className="resolution-page__label">改进描述</label>
-                    <textarea
-                        className="resolution-page__textarea"
-                        rows={3}
-                        placeholder="描述客户如何修改了此问题（自然语言即可，LLM 会润色）"
-                        value={improvementDesc}
-                        onChange={e => setImprovementDesc(e.target.value)}
-                    />
+                    <label className="resolution-page__toggle-label">
+                        <input
+                            type="checkbox"
+                            checked={showImprovementDesc}
+                            onChange={e => setShowImprovementDesc(e.target.checked)}
+                        />
+                        <span>提供项目方修复描述（不勾选此项则默认使用 implementing the recommended fix）</span>
+                    </label>
+                    {showImprovementDesc && (
+                        <textarea
+                            className="resolution-page__textarea"
+                            rows={3}
+                            placeholder="描述客户如何修改了此问题（自然语言即可，LLM 会润色）"
+                            value={improvementDesc}
+                            onChange={e => setImprovementDesc(e.target.value)}
+                            style={{ marginTop: '8px' }}
+                        />
+                    )}
                 </div>
             )}
 
@@ -248,11 +260,11 @@ export function ResolutionPage({ initData }: ResolutionPageProps) {
 
             {/* 补充说明 */}
             <div className="resolution-page__section">
-                <label className="resolution-page__label">补充说明（最高优先级）</label>
+                <label className="resolution-page__label">补充说明</label>
                 <textarea
                     className="resolution-page__textarea"
                     rows={2}
-                    placeholder="可填写额外要求，LLM 会以此为准..."
+                    placeholder="如果 Resolution 不符合你的要求，可在此填写额外要求，LLM 会以此为准..."
                     value={userNote}
                     onChange={e => setUserNote(e.target.value)}
                 />

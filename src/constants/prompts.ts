@@ -127,12 +127,12 @@ export const PROMPT_PARTICIPANT_PROCESS = `
 
 // 默认模板列表 (仅包含尾部指令，作为 Prompt 的一部分)
 export const DEFAULT_FINDING_TEMPLATES = [
-    { name: "生成 Finding 描述", content: PROMPT_SECTION_INPUT_PLACEHOLDER_STRICT },
-    { name: "生成 Finding 描述-懒人模式", content: PROMPT_SECTION_INPUT_PLACEHOLDER_LAZY },
+  { name: "生成 Finding 描述", content: PROMPT_SECTION_INPUT_PLACEHOLDER_STRICT },
+  { name: "生成 Finding 描述-懒人模式", content: PROMPT_SECTION_INPUT_PLACEHOLDER_LAZY },
 ];
 
 export const DEFAULT_PROCESS_TEMPLATES = [
-    { name: "生成 Participant Process", content: PROMPT_PARTICIPANT_PROCESS },
+  { name: "生成 Participant Process", content: PROMPT_PARTICIPANT_PROCESS },
 ];
 
 // ============================================================================
@@ -162,6 +162,8 @@ export const PROMPT_RESOLUTION_FIXED = `
 情况 C - hashType 为 "none"（无 hash）：
   "The team adopted our advice and fixed this issue by <改进描述>."
 
+（注：如果用户未提供改进描述，<改进描述>处请直接使用 "implementing the recommended fix" 替换）
+
 根据用户信息中的 hashType 字段自动选择对应情况。
 `;
 
@@ -190,6 +192,8 @@ export const PROMPT_RESOLUTION_PARTIALLY_FIXED = `
 情况 C - hashType 为 "none"（无 hash）：
   "The team adopted our advice and partially fixed this issue by <改进描述>. However, <遗留问题> still exist in current code version, the team acknowledged this/these issue and state that "<WHY>", so no modifications will be made to the current version."
 
+（注：如果用户未提供改进描述，<改进描述>处请直接使用 "implementing the recommended fix" 替换）
+
 根据用户信息中的 hashType 字段自动选择对应情况。
 `;
 
@@ -207,6 +211,6 @@ export const PROMPT_RESOLUTION_GENERATE = `
 `;
 
 export const DEFAULT_RESOLUTION_TEMPLATES = [
-    { name: "生成 Finding Resolution", content: PROMPT_RESOLUTION_GENERATE },
+  { name: "生成 Finding Resolution", content: PROMPT_RESOLUTION_GENERATE },
 ];
 
